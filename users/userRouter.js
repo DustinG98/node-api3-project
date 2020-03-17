@@ -19,8 +19,14 @@ router.post('/', validateUser ,(req, res) => {
 });
 
 //ADD POST TO USER
-router.post('/:id/posts', validateUserId ,(req, res) => {
-  
+router.post('/:id/posts', validateUserId, validatePost ,(req, res) => {
+  postDb.insert({ user_id: req.params.id, ...req.body })
+    .then(post => {
+      res.status(201).json(post)
+    })
+    .catch(err => {
+      res.status(500).json({ errorMessage: "there has been an error trying to add the post.", error: err})
+    })
 });
 
 //GET ALL USERS
@@ -98,7 +104,13 @@ function validateUser(req, res, next) {
 }
 
 function validatePost(req, res, next) {
-  // do your magic!
+  if(!req.body) {
+    res.status(400).json({ message: "missing post data." })
+  } else if(!req.body.text) {
+    res.status(400).json({ message: "missing required text field" })
+  } else {
+    next();
+  }
 }
 
 module.exports = router;
